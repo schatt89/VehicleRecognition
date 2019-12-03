@@ -1,4 +1,6 @@
 .ipynb_checkpoints
+.vscode/
+*/__pycache__/*
 runs/
 tutorials/
 Ex3.ipynb
