@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt
 from urllib.request import urlopen,urlretrieve
 
 from tensorflow.keras.models import load_model
-from sklearn.datasets import load_files   
-#from tensorflow.keras.utils import np_utils
+from sklearn.datasets import load_files 
+
+import split_utils
 from glob import glob
 from tensorflow.keras import applications
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -54,41 +55,71 @@ def main(args):
     
     # example of progressively loading images from file
     
-    # create generator
-    datagen = ImageDataGenerator(
-        #featurewise_center=True,
-        #featurewise_std_normalization=True,
-        rotation_range=20,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        rescale = 1./255.,
-        horizontal_flip=True,
-        validation_split=0.2)
+    original_dir = "/home/nvme/data/train/train"
+    validation_split = 0.2
+
+    batch_size = 32
+
+    # all data in train_dir and val_dir which are alias to original_data. (both dir is temporary directory)
+    # don't clear base_dir, because this directory holds on temp directory.
+    base_dir, train_dir, val_dir = split_utils.train_valid_split(original_dir, validation_split, seed=1)
     
-    train_gen = datagen.flow_from_directory('/home/nvme/data/train/train',
-                                            class_mode = "categorical",
-                                            target_size = (224, 224),
-                                            batch_size = 32,
-                                            shuffle = True,
-                                            subset = "training",
-                                            seed = 42)
-    val_gen = datagen.flow_from_directory('/home/nvme/data/train/train',
-                                            class_mode = "categorical",
-                                            target_size = (224, 224),
-                                            batch_size = 32,
-                                            shuffle = True,
-                                            subset = "validation",
-                                            seed = 42)
+    # generator for train data
+    train_datagen = ImageDataGenerator(
+        rescale=1./255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True)
+
+    train_gen = train_datagen.flow_from_directory(
+        train_dir,
+        class_mode = "categorical",
+        target_size = (224, 224),
+        batch_size = batch_size,
+        shuffle = True,
+        seed = 42
+    )
+
+    # generator for validation data
+    val_datagen = ImageDataGenerator(rescale=1./255)
+
+    val_gen = val_datagen.flow_from_directory(
+        val_dir,
+        class_mode = "categorical",
+        target_size = (224, 224),
+        batch_size = batch_size,
+        shuffle = True,
+        seed = 42
+    )
     
     epochs = args.epochs
+
+    class_weights = {0: 65,
+                     1: 42,
+                     2: 5,
+                     3: 1,
+                     4: 4,
+                     5: 1,
+                     6: 169,
+                     7: 27,
+                     8: 13,
+                     9: 115,
+                     10: 2,
+                     11: 56,
+                     12: 70,
+                     13: 42,
+                     14: 11,
+                     15: 4,
+                     16: 7}
+
     
     model.fit_generator(
        train_gen,
-       steps_per_epoch = train_gen.samples // 32,
+       steps_per_epoch = train_gen.samples // batch_size,
        validation_data = val_gen, 
-       validation_steps = val_gen.samples // 32,
-       epochs = epochs 
-       #,callbacks=[tensorboard_callback]
+       validation_steps = val_gen.samples // batch_size,
+       epochs = epochs,
+       class_weight =  class_weights
     )
     
     for layer in model.layers[:249]:
@@ -101,9 +132,9 @@ def main(args):
                                 metrics=['accuracy'])
 
     model.fit_generator(train_gen,
-        steps_per_epoch = train_gen.samples // 32,
+        steps_per_epoch = train_gen.samples // batch_size,
         validation_data = val_gen, 
-        validation_steps = val_gen.samples // 32,
+        validation_steps = val_gen.samples // batch_size,
         epochs = epochs)
     
     datagen_test = ImageDataGenerator(rescale = 1./255.)
@@ -121,15 +152,17 @@ def main(args):
     predictions = [class_names[k] for k in p]
     a = np.arange(len(predictions))
     d = {'Id': a, 'Category': predictions}
-
+ 
 
     df = pd.DataFrame(d)
-    df.to_csv("submission2.csv", index = None, header = True)
-    df.head()
+    
+    file_name = args.file
+    df.to_csv(file_name, index = None, header = True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Training experiment.')
     parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--file', type=str)
     args = parser.parse_args()
     print(args)
     
