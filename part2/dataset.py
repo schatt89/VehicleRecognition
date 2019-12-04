@@ -78,7 +78,7 @@ def get_train_valid_loader(data_dir,
 
     # load the dataset
     train_dataset = datasets.ImageFolder(data_dir, data_transforms['train'])
-    valid_dataset = datasets.ImageFolder(data_dir, data_transforms['val'])
+    valid_dataset = datasets.ImageFolder(data_dir, data_transforms['valid'])
 
     num_train = len(train_dataset)
     indices = list(range(num_train))
@@ -133,7 +133,7 @@ def get_test_loader(data_dir,
     - test_loader: test set iterator.
     """
 
-    test_dataset = TestImageFolder(data_dir, data_transforms['val'])
+    test_dataset = TestImageFolder(data_dir, data_transforms['valid'])
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size, shuffle=False, num_workers=num_workers, 
         pin_memory=pin_memory,

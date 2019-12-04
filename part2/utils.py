@@ -51,4 +51,7 @@ def plot_images(images, data_dir, cls_true, cls_pred=None):
         ax.set_xticks([])
         ax.set_yticks([])
 
-    plt.show()
+
+    plt.show(block=False)
+    plt.pause(5)
+    plt.close()

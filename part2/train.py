@@ -32,7 +32,7 @@ def train_model(
         print('-' * 10)
 
         # Each epoch has a training and validation phase
-        for phase in ['train', 'val']:
+        for phase in ['train', 'valid']:
             if phase == 'train':
                 model.train()  # Set model to training mode
             else:
@@ -41,6 +41,8 @@ def train_model(
             running_loss = 0.0
             running_corrects = 0
             seen_images = 0
+            current_accuracies_pbar = []
+            current_loss_pbar = []
 
             # Iterate over data.
             progress_bar = tqdm(dataloaders[phase], desc=f'{phase}: ({epoch})')
@@ -71,13 +73,16 @@ def train_model(
                     _, preds = torch.max(outputs, 1)
 
                     # add loss to the progress bar
-                    if i % 1 == 0:
-                        current_accuracy = torch.sum(preds == labels.data).item() / len(inputs)
+                    current_accuracies_pbar.append(torch.sum(preds == labels.data).item() / len(inputs))
+                    current_loss_pbar.append(loss.item())
+                    if i % 10 == 0:
                         desc = f'{phase} ({epoch}): '
-                        desc += f'Loss: {loss.item():.5f}; '
-                        desc += f'Acc: {current_accuracy:.5f}'
+                        desc += f'Loss: {np.mean(current_loss_pbar):.5f}; '
+                        desc += f'Acc: {np.mean(current_accuracies_pbar):.5f}'
 
                         progress_bar.set_description(desc)
+                        current_accuracies_pbar = []
+                        current_loss_pbar = []
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
@@ -96,12 +101,12 @@ def train_model(
                 phase, epoch_loss, epoch_acc))
 
             # deep copy the model
-            if phase == 'val' and epoch_acc > best_acc:
+            if phase == 'valid' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_epoch = epoch
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
-            if phase == 'val':
+            if phase == 'valid':
                 val_acc_history.append(epoch_acc)
 
         print()

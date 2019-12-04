@@ -22,6 +22,7 @@ print("Torchvision Version: ", torchvision.__version__)
 
 def main():
     # define the path of the predictions
+    save_pred_path = None
     save_pred_path = f'./part2/experiments/{strftime("%y%m%d%H%M%S", localtime())}.csv'
     
     # Detect if we have a GPU available
@@ -47,13 +48,16 @@ def main():
     test_data_dir = '/home/nvme/data/openimg/test/testset/'
 
     # Models to choose from [resnet, alexnet, vgg, squeezenet, densenet, inception]
-    model_name = "inception"
+    # 'resnext50_32x4d', 'resnext101_32x8d', 'resnext101_32x48d_wsl'
+    # 'resnext101_32x32d_wsl'
+    model_name = "resnext101_32x32d_wsl"
 
     # Number of classes in the dataset
     num_classes = len(os.listdir(train_data_dir))
 
     # Batch size for training (change depending on how much memory you have)
-    batch_size = 64
+
+    batch_size = 32
     # num of workers for data loading
     num_workers = 16
 
@@ -82,7 +86,7 @@ def main():
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
-        'val': transforms.Compose([
+        'valid': transforms.Compose([
             transforms.Resize(input_size),
             transforms.CenterCrop(input_size),
             transforms.ToTensor(),
@@ -100,7 +104,7 @@ def main():
 
     dataloaders_dict = {
         'train': train_loader,
-        'val': valid_loader,
+        'valid': valid_loader,
         'test': test_loader
     }
 
@@ -137,9 +141,10 @@ def main():
         num_epochs=num_epochs, is_inception=(model_name == "inception")
     )
 
-    # Make test inference
-    test_model(model_ft, dataloaders_dict, device, save_pred_path,
-               is_inception=(model_name == "inception"))
+    # do test inference
+    if save_pred_path is not None:
+        test_model(model_ft, dataloaders_dict, device, save_pred_path,
+                is_inception=(model_name == "inception"))
 
 
 

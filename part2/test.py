@@ -41,15 +41,7 @@ def test_model(
         inputs = inputs.to(device)
 
         with torch.no_grad():
-            # Get model outputs and calculate loss
-            # Special case for inception because in training it has an auxiliary output. In train
-            #   mode we calculate the loss by summing the final output and the auxiliary output
-            #   but in testing we only consider the final output.
-            if is_inception:
-                outputs, aux_outputs = model(inputs)
-            else:
-                outputs = model(inputs)
-
+            outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
         
         # accumulate the preductions after each batch

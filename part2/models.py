@@ -83,6 +83,44 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
         model_ft.fc = nn.Linear(num_ftrs, num_classes)
         input_size = 299
 
+    elif model_name == "resnext50_32x4d":
+        """ resnext50_32x4d
+        """
+        model_ft = models.resnext50_32x4d(pretrained=True)
+        set_parameter_requires_grad(model_ft, feature_extract)
+        num_ftrs = model_ft.fc.in_features
+        model_ft.fc = nn.Linear(num_ftrs, num_classes)
+        input_size = 224
+    
+    elif model_name == "resnext101_32x48d_wsl":
+        """ resnext101_32x48d_wsl
+        """
+        # model_ft = models.resnext101_32x8d(pretrained=True)
+        model_ft = torch.hub.load('facebookresearch/WSL-Images', 'resnext101_32x48d_wsl')
+        set_parameter_requires_grad(model_ft, feature_extract)
+        num_ftrs = model_ft.fc.in_features
+        model_ft.fc = nn.Linear(num_ftrs, num_classes)
+        input_size = 224
+
+    elif model_name == "resnext101_32x32d_wsl":
+        """ resnext101_32x32d_wsl
+        """
+        model_ft = torch.hub.load(
+            'facebookresearch/WSL-Images', 'resnext101_32x32d_wsl')
+        set_parameter_requires_grad(model_ft, feature_extract)
+        num_ftrs = model_ft.fc.in_features
+        model_ft.fc = nn.Linear(num_ftrs, num_classes)
+        input_size = 224
+
+    elif model_name == "resnext101_32x8d":
+        """ resnext101_32x8d
+        """
+        model_ft = models.resnext101_32x8d(pretrained=True)
+        set_parameter_requires_grad(model_ft, feature_extract)
+        num_ftrs = model_ft.fc.in_features
+        model_ft.fc = nn.Linear(num_ftrs, num_classes)
+        input_size = 224
+
     else:
         print("Invalid model name, exiting...")
         exit()
