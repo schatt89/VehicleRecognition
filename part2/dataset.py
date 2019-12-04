@@ -1,10 +1,47 @@
+import os
+from glob import glob
+
 import torch
 import numpy as np
+
+from PIL import Image
 
 from utils import plot_images
 from torchvision import datasets
 from torchvision import transforms
 from torch.utils.data.sampler import SubsetRandomSampler
+from torch.utils.data import Dataset
+
+
+class TestImageFolder(Dataset):
+
+    def __init__(self, data_dir, transforms):
+        self.data_dir = data_dir
+        self.dataset = sorted(glob(os.path.join(data_dir, '*.jpg')))
+        self.transforms = transforms
+        # self.target_transform = target_transform
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        path = self.dataset[idx]
+
+        pil_image = self.pil_loader(path)
+        if self.transforms is not None:
+            pil_image = self.transforms(pil_image)
+
+        return pil_image, path
+
+        # if self.target_transform is not None:
+        #     target = self.target_transform(target)
+
+    def pil_loader(self, path):
+        # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+        with open(path, 'rb') as f:
+            img = Image.open(f)
+            return img.convert('RGB')
+
 
 def get_train_valid_loader(data_dir,
                            batch_size,
@@ -24,7 +61,6 @@ def get_train_valid_loader(data_dir,
     - data_dir: path directory to the dataset.
     - batch_size: how many samples per batch to load.
     - data_transforms: whether to apply the data augmentation scheme
-      mentioned in the paper. Only applied on the train split.
     - random_seed: fix seed for reproducibility.
     - valid_size: percentage split of the training set used for
       the validation set. Should be a float in the range [0, 1].
@@ -78,54 +114,28 @@ def get_train_valid_loader(data_dir,
 
     return (train_loader, valid_loader)
 
-
 def get_test_loader(data_dir,
                     batch_size,
-                    shuffle=True,
+                    data_transforms,
                     num_workers=4,
                     pin_memory=False):
-    NotImplementedError
+    """
+    Params
+    ------
+    - data_dir: path directory to the dataset.
+    - batch_size: how many samples per batch to load.
+    - data_transforms: whether to apply the data augmentation scheme
+    - num_workers: number of subprocesses to use when loading the dataset.
+    - pin_memory: whether to copy tensors into CUDA pinned memory. Set it to
+      True if using GPU.
+    Returns
+    -------
+    - test_loader: test set iterator.
+    """
 
-# def get_test_loader(data_dir,
-#                     batch_size,
-#                     shuffle=True,
-#                     num_workers=4,
-#                     pin_memory=False):
-#     """
-#     Utility function for loading and returning a multi-process
-#     test iterator over the CIFAR-10 dataset.
-#     If using CUDA, num_workers should be set to 1 and pin_memory to True.
-#     Params
-#     ------
-#     - data_dir: path directory to the dataset.
-#     - batch_size: how many samples per batch to load.
-#     - shuffle: whether to shuffle the dataset after every epoch.
-#     - num_workers: number of subprocesses to use when loading the dataset.
-#     - pin_memory: whether to copy tensors into CUDA pinned memory. Set it to
-#       True if using GPU.
-#     Returns
-#     -------
-#     - data_loader: test set iterator.
-#     """
-#     normalize = transforms.Normalize(
-#         mean=[0.485, 0.456, 0.406],
-#         std=[0.229, 0.224, 0.225],
-#     )
-
-#     # define transform
-#     transform = transforms.Compose([
-#         transforms.ToTensor(),
-#         normalize,
-#     ])
-
-#     dataset = datasets.CIFAR10(
-#         root=data_dir, train=False,
-#         download=True, transform=transform,
-#     )
-
-#     data_loader = torch.utils.data.DataLoader(
-#         dataset, batch_size=batch_size, shuffle=shuffle,
-#         num_workers=num_workers, pin_memory=pin_memory,
-#     )
-
-#     return data_loader
+    test_dataset = TestImageFolder(data_dir, data_transforms['val'])
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, batch_size, shuffle=False, num_workers=num_workers, 
+        pin_memory=pin_memory,
+    )
+    return test_loader

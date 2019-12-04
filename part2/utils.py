@@ -1,6 +1,31 @@
 import matplotlib.pyplot as plt
 import os
 
+from typing import Tuple, Dict, Union
+
+def save_predictions(
+    save_path: str,
+    predictions: Tuple[str, int],
+    idx_to_class: Dict[int, str]
+) -> None:
+    '''
+        Format:
+        Id,Category
+        0,Car
+        1,Catepillar
+    '''
+    with open(save_path, 'w') as outf:
+        # header
+        outf.write('Id,Category\n')
+
+        # other lines
+        for (pred_path, pred_idx) in predictions:
+            # extract Id from the filename
+            Id = int(os.path.split(pred_path)[1].strip('.jpg'))
+            outf.write(f'{Id},{idx_to_class[pred_idx]}\n')
+
+    print(f'Wrote preds to {save_path}')
+
 
 def plot_images(images, data_dir, cls_true, cls_pred=None):
     """
