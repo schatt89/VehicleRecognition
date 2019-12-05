@@ -7,6 +7,7 @@ class_names = sorted(os.listdir(r"C:\TTY\SP and ML\PR and ML\Project assignment\
 
 predictions_sklearn = []
 with open("submission_combined_sklearn.csv", "r") as fp:
+    next(fp)
     csv_reader = csv.reader(fp)
     for row in csv_reader:
         predictions_sklearn.append(class_names.index(row[1]))
@@ -16,6 +17,7 @@ predictions_sklearn = np.array(predictions_sklearn)
 
 predictions_inception_v3 = []
 with open("submission_inception_v3.csv", "r") as fp:
+    next(fp)
     csv_reader = csv.reader(fp)
     for row in csv_reader:
         predictions_inception_v3.append(class_names.index(row[1]))
@@ -25,13 +27,12 @@ predictions_inception_v3 = np.array(predictions_inception_v3)
 
 predictions_resnext101 = []
 with open("submission_resnext101.csv", "r") as fp:
+    next(fp)
     csv_reader = csv.reader(fp)
     for row in csv_reader:
         predictions_resnext101.append(class_names.index(row[1]))
         
 predictions_resnext101 = np.array(predictions_resnext101)
-
-
 
 
 # Submission file
