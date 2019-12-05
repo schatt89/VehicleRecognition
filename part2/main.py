@@ -16,14 +16,29 @@ from train import train_model
 from test import test_model
 from dataset import get_train_valid_loader, get_test_loader
 from models import initialize_model
+from utils import workdir_copy
 
 print("PyTorch Version: ", torch.__version__)
 print("Torchvision Version: ", torchvision.__version__)
 
 def main():
-    # define the path of the predictions
+    # checks
+    pwd = os.getcwd()
+    assert os.getcwd().endswith('VehicleRecognition')
+    assert os.path.exists('./part2/experiments/')
+    print(f'Working dir: {pwd}')
+
+    # save the experiment time
+    start_time = strftime("%y%m%d%H%M%S", localtime())
+    print(f'Timestep: {start_time}')
+
+    # define the paths
     save_pred_path = None
-    save_pred_path = f'./part2/experiments/{strftime("%y%m%d%H%M%S", localtime())}.csv'
+    save_pred_path = f'./part2/experiments/{start_time}.csv'
+    save_best_model_path = f'/home/hdd/logs/openimg/{start_time}/best_model.pt'
+
+    # backup the working directiory
+    workdir_copy(pwd, os.path.split(save_best_model_path)[0])
     
     # Detect if we have a GPU available
     device = torch.device("cuda:0")
@@ -32,7 +47,7 @@ def main():
     # valid ratio
     valid_size = 0.25
     # learning rate
-    lr = 1e-3
+    lr = 1e-4
     
     # fix the random seed
     seed = 13
@@ -41,7 +56,6 @@ def main():
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    
     # paths to dataset
     # data_dir = '/home/nvme/data/openimg/hymenoptera_data/'
     train_data_dir = '/home/nvme/data/openimg/train/train/'
@@ -56,13 +70,12 @@ def main():
     num_classes = len(os.listdir(train_data_dir))
 
     # Batch size for training (change depending on how much memory you have)
-
     batch_size = 32
     # num of workers for data loading
     num_workers = 16
 
     # Number of epochs to train for
-    num_epochs = 10
+    num_epochs = 20
 
     # Flag for feature extracting. When False, we finetune the whole model,
     #   when True we only update the reshaped layer params
@@ -130,7 +143,8 @@ def main():
                 print("\t", name)
 
     # Observe that all parameters are being optimized
-    optimizer_ft = optim.Adam(params_to_update, lr=lr)
+    print('Using adamW')
+    optimizer_ft = optim.AdamW(params_to_update, lr=lr)
 
     # Setup the loss fxn
     criterion = nn.CrossEntropyLoss()
@@ -138,6 +152,7 @@ def main():
     # Train and evaluate
     model_ft, hist = train_model(
         model_ft, dataloaders_dict, criterion, optimizer_ft, device,
+        save_best_model_path,
         num_epochs=num_epochs, is_inception=(model_name == "inception")
     )
 

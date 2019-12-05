@@ -1,13 +1,19 @@
 import matplotlib.pyplot as plt
 import os
+import torch
+from shutil import copytree, ignore_patterns
 
 from typing import Tuple, Dict, Union
 
+def workdir_copy(pwd: str, copy_path: str):
+    cp_path = os.path.join(copy_path, 'wdir_copy')
+    copytree(pwd, cp_path, ignore=ignore_patterns('__pycache__', '.git'))
+
 def save_predictions(
-    save_path: str,
-    predictions: Tuple[str, int],
-    idx_to_class: Dict[int, str]
-) -> None:
+        save_path: str,
+        predictions: Tuple[str, int],
+        idx_to_class: Dict[int, str]
+    ) -> None:
     '''
         Format:
         Id,Category

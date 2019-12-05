@@ -12,14 +12,17 @@ import time
 import os
 import copy
 
+from typing import Tuple, Dict, Union
+
 def train_model(
     model, 
     dataloaders, 
     criterion, 
     optimizer, 
-    device,
-    num_epochs=25, 
-    is_inception=False):
+    device: torch.device,
+    save_best_model_path: Union[None, str] = None,
+    num_epochs: int = 25, 
+    is_inception: bool = False):
     since = time.time()
 
     val_acc_history = []
@@ -106,6 +109,7 @@ def train_model(
                 best_epoch = epoch
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
+                best_optimizer_wts = copy.deepcopy(optimizer.state_dict())
             if phase == 'valid':
                 val_acc_history.append(epoch_acc)
 
@@ -117,4 +121,19 @@ def train_model(
 
     # load best model weights
     model.load_state_dict(best_model_wts)
+
+    # save best model
+    if save_best_model_path is not None:
+        os.makedirs(os.path.split(save_best_model_path)[0], exist_ok=True)
+        
+        torch.save({
+            'epoch': best_epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': best_loss,
+            'accuracy': best_acc
+        }, save_best_model_path)
+
+    # train extra epochs on 
+
     return model, val_acc_history
