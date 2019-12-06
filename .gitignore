@@ -1,5 +1,6 @@
 .ipynb_checkpoints
 .vscode/
+part2/snippets.py
 */__pycache__/*
 runs/
 tutorials/

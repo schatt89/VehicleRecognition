@@ -30,7 +30,8 @@ def train_model(
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
-    for epoch in range(num_epochs):
+    print('If TBoard is used make sure to account for the epoch number')
+    for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
@@ -100,8 +101,7 @@ def train_model(
             epoch_loss = running_loss / seen_images
             epoch_acc = running_corrects.double() / seen_images
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
+            print(f'{phase} Loss: {epoch_loss:.5f} Acc: {epoch_acc:.5f}')
 
             # deep copy the model
             if phase == 'valid' and epoch_acc > best_acc:

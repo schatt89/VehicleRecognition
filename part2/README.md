@@ -1,12 +1,21 @@
 # Experiments comments
 
-### resnext101_32x48d_wsl (lr 1e-4) AdamW cuda2
+### DenseNet (weighted, rest is the same as below) CUDA:2
+
+### resnext101_32x32d_wsl (weighted, lr 1e-4, adam) CUDA:0
+
+### SqueezeNet (weighted, lr 1e-3)
+- Best val (at 8 epoch): acc: 0.845255; loss: 0.499326
+
+----------------------------------------------------------------------------------
+
+### resnext101_32x48d_wsl (lr 1e-4) AdamW
 - memory error at 2nd
 
-### resnext101_32x32d_wsl (lr 1e-4) AdamW cuda 1
+### resnext101_32x32d_wsl (lr 1e-4) AdamW
 - Best val (at 15 epoch): acc: 0.903580; loss: 0.309840 (171m 56s) 191204205914.csv
 
-### resnext101_32x32d_wsl (lr 1e-4) cuda 0
+### resnext101_32x32d_wsl (lr 1e-4)
 - Best val (at 15 epoch): acc: 0.903580; loss: 0.309837 (167m 34s) 191204205825.csv
 
 ### resnext101_32x32d_wsl
@@ -31,5 +40,4 @@
 - Best val: acc: 0.864499; (191204113332.csv)
 
 ### SqueezeNet
-- Best val (at 5 epoch): acc: 0.830980; loss: 0.538799
-- 10 epoch: Best val: acc: 0.8616
+- Best val (at 5 epoch): acc: 0.830980; loss: 0.538799 (replicated: 191206175028.???)

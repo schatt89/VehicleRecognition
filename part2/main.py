@@ -22,6 +22,13 @@ print("PyTorch Version: ", torch.__version__)
 print("Torchvision Version: ", torchvision.__version__)
 
 def main():
+    # fix the random seed
+    seed = 13
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
     # checks
     pwd = os.getcwd()
     assert os.getcwd().endswith('VehicleRecognition')
@@ -48,13 +55,6 @@ def main():
     valid_size = 0.25
     # learning rate
     lr = 1e-4
-    
-    # fix the random seed
-    seed = 13
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
     # paths to dataset
     # data_dir = '/home/nvme/data/openimg/hymenoptera_data/'
@@ -73,9 +73,11 @@ def main():
     batch_size = 32
     # num of workers for data loading
     num_workers = 16
+    pin_memory = True
+    weighted = True
 
     # Number of epochs to train for
-    num_epochs = 20
+    num_epochs = 50
 
     # Flag for feature extracting. When False, we finetune the whole model,
     #   when True we only update the reshaped layer params
@@ -108,12 +110,13 @@ def main():
     }
 
     train_loader, valid_loader = get_train_valid_loader(
-        train_data_dir, batch_size, data_transforms, seed, valid_size=valid_size,
-        shuffle=True, show_sample=True, num_workers=num_workers, pin_memory=False)
+        train_data_dir, batch_size, data_transforms, seed, weighted, valid_size=valid_size,
+        shuffle=True, show_sample=True, num_workers=num_workers, pin_memory=pin_memory
+    )
 
     test_loader = get_test_loader(
         test_data_dir, batch_size, data_transforms, num_workers=num_workers, 
-        pin_memory=False)
+        pin_memory=pin_memory)
 
     dataloaders_dict = {
         'train': train_loader,
@@ -143,16 +146,15 @@ def main():
                 print("\t", name)
 
     # Observe that all parameters are being optimized
-    print('Using adamW')
-    optimizer_ft = optim.AdamW(params_to_update, lr=lr)
+    print('Using adam')
+    optimizer_ft = optim.Adam(params_to_update, lr=lr)
 
     # Setup the loss fxn
     criterion = nn.CrossEntropyLoss()
 
     # Train and evaluate
     model_ft, hist = train_model(
-        model_ft, dataloaders_dict, criterion, optimizer_ft, device,
-        save_best_model_path,
+        model_ft, dataloaders_dict, criterion, optimizer_ft, device, save_best_model_path,
         num_epochs=num_epochs, is_inception=(model_name == "inception")
     )
 
