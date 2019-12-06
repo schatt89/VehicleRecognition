@@ -127,7 +127,7 @@ def main(args):
     for layer in model.layers[249:]:
         layer.trainable = True
     
-    model.compile(optimizer=SGD(lr=0.00001, momentum=0.9),
+    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9),
                                 loss='categorical_crossentropy',
                                 metrics=['accuracy'])
 
@@ -136,6 +136,8 @@ def main(args):
         validation_data = val_gen, 
         validation_steps = val_gen.samples // batch_size,
         epochs = epochs)
+    
+    model.save('inception_v3.h5')
     
     datagen_test = ImageDataGenerator(rescale = 1./255.)
 
