@@ -103,10 +103,10 @@ def calculate_samples_weights(
 
 
 def valid_and_weighted_train_samplers(
-        train_dataset: Dataset,
-        valid_size: float,
-        random_state: int,
-    ) -> Tuple[Sampler, list]:
+            train_dataset: Dataset,
+            valid_size: float,
+            random_state: int,
+    ) -> Tuple[Sampler, Sampler]:
     # path_cls a list of tuples: (path, class_idx)
     path_cls = train_dataset.imgs
     # extract only the classes and make them numpy array
@@ -118,7 +118,7 @@ def valid_and_weighted_train_samplers(
     # weights for each sample in ImageDataset (train: weighted, valid: all zeros)
     samples_weights = calculate_samples_weights(train_index, path_cls)
     # sampled indices (which must belong only to train_index) <-
-    train_sampler = WeightedRandomSampler(samples_weights, len(samples_weights))
+    train_sampler = WeightedRandomSampler(samples_weights, len(train_index))
 
     # cls_to_count_obs = {cls: 0 for cls in set(samples_classes)}
     # for i in range(100):
@@ -126,7 +126,7 @@ def valid_and_weighted_train_samplers(
     #         cls_to_count_obs[samples_classes[train_idx]] += 1
     # print(cls_to_count_obs) # {0: 2501153, 1: 2497812, 2: 2501595, 3: 2499540}
 
-    return train_sampler, SequentialSampler(valid_index)
+    return train_sampler, SubsetRandomSampler(valid_index)
 
 
 
@@ -199,6 +199,7 @@ def get_train_valid_loader(data_dir,
     valid_dataset = datasets.ImageFolder(data_dir, data_transforms['valid'])
 
     if weighted:
+        print('Using weighted')
         train_sampler, valid_sampler = valid_and_weighted_train_samplers(
             train_dataset, valid_size, random_state)
 
@@ -223,6 +224,11 @@ def get_train_valid_loader(data_dir,
         valid_dataset, batch_size=batch_size, sampler=valid_sampler,
         num_workers=num_workers, pin_memory=pin_memory,
     )
+
+    print(f'Total: {len(train_dataset)} images; Train/Valid: {train_sampler}/{len(valid_sampler)}')
+
+    print(len(train_sampler), len(valid_sampler), len(train_dataset))
+    print(len(train_loader), len(valid_loader))
 
     # visualize some images
     if show_sample:

@@ -1,11 +1,22 @@
 # Experiments comments
 
-### DenseNet (weighted, rest is the same as below) CUDA:2
 
-### resnext101_32x32d_wsl (weighted, lr 1e-4, adam) CUDA:0
+### SqueezeNet (weighted) CUDA:2
+- Best val (at 7 epoch): acc: 0.775435; loss: 0.713944
+
+### resnext101_32x32d_wsl (weighted, lr 1e-4, adam)
+- Best val (at 16 epoch): acc: 0.859219; loss: 0.434397 (191207113036.csv)
+
+----------------------------------------------------------------------------------
+
+### DenseNet (weighted, rest is the same as below)
+- (bug) Best val (at 9 epoch): acc: 0.896552; loss: 0.325 (191206181024.csv)
+
+### resnext101_32x32d_wsl (weighted, lr 1e-4, adam)
+- (bug) Best val (at 36 epoch): acc: 0.942291; loss: 0.190224 (191206180532.csv)
 
 ### SqueezeNet (weighted, lr 1e-3)
-- Best val (at 8 epoch): acc: 0.845255; loss: 0.499326
+- (bug) Best val (at 8 epoch): acc: 0.845255; loss: 0.499326
 
 ----------------------------------------------------------------------------------
 
@@ -41,3 +52,8 @@
 
 ### SqueezeNet
 - Best val (at 5 epoch): acc: 0.830980; loss: 0.538799 (replicated: 191206175028.???)
+
+
+## TODO:
+- [ ] weighted loss
+- [ ] weighted dataset

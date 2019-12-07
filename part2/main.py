@@ -77,7 +77,7 @@ def main():
     weighted = True
 
     # Number of epochs to train for
-    num_epochs = 50
+    num_epochs = 20
 
     # Flag for feature extracting. When False, we finetune the whole model,
     #   when True we only update the reshaped layer params
@@ -88,7 +88,8 @@ def main():
         model_name, num_classes, feature_extract, use_pretrained=True)
 
     # Print the model we just instantiated
-    print(model_ft)
+    # print(model_ft)
+    print(f'using model: {model_name}')
 
     # Data augmentation and normalization for training
     # Just normalization for validation
@@ -115,8 +116,7 @@ def main():
     )
 
     test_loader = get_test_loader(
-        test_data_dir, batch_size, data_transforms, num_workers=num_workers, 
-        pin_memory=pin_memory)
+        test_data_dir, batch_size, data_transforms, num_workers=num_workers, pin_memory=pin_memory)
 
     dataloaders_dict = {
         'train': train_loader,
