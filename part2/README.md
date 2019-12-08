@@ -1,21 +1,31 @@
 # Experiments comments
 
+### SqueezeNet (weighted loss)
+- Best val (at 6 epoch): acc: 0.769165; loss: 0.892056 (191207183429.csv)
 
-### SqueezeNet (weighted) CUDA:2
+### resnext101_32x32d_wsl (weighted loss, lr 1e-4)
+- Best val (at 31 epoch): acc: 0.861072; loss: 0.460283 (191207184712.csv)
+
+### resnext101_32x32d_wsl (lr 1e-4) - attempt to replicate with stratified split
+- Accuracy: 89.4; (191207181758.csv)
+
+----------------------------------------------------------------------------------
+
+### SqueezeNet (weighted sampler)
 - Best val (at 7 epoch): acc: 0.775435; loss: 0.713944
 
-### resnext101_32x32d_wsl (weighted, lr 1e-4, adam)
+### resnext101_32x32d_wsl (weighted sampler, lr 1e-4, adam)
 - Best val (at 16 epoch): acc: 0.859219; loss: 0.434397 (191207113036.csv)
 
 ----------------------------------------------------------------------------------
 
-### DenseNet (weighted, rest is the same as below)
+### DenseNet (weighted sampler, rest is the same as below)
 - (bug) Best val (at 9 epoch): acc: 0.896552; loss: 0.325 (191206181024.csv)
 
-### resnext101_32x32d_wsl (weighted, lr 1e-4, adam)
+### resnext101_32x32d_wsl (weighted sampler, lr 1e-4, adam)
 - (bug) Best val (at 36 epoch): acc: 0.942291; loss: 0.190224 (191206180532.csv)
 
-### SqueezeNet (weighted, lr 1e-3)
+### SqueezeNet (weighted sampler, lr 1e-3)
 - (bug) Best val (at 8 epoch): acc: 0.845255; loss: 0.499326
 
 ----------------------------------------------------------------------------------
@@ -51,9 +61,12 @@
 - Best val: acc: 0.864499; (191204113332.csv)
 
 ### SqueezeNet
-- Best val (at 5 epoch): acc: 0.830980; loss: 0.538799 (replicated: 191206175028.???)
+- Best val (at 5 epoch): acc: 0.830980; loss: 0.538799 (replicated: 191206175028.csv)
+- Best val (at 6 epoch): acc: 0.832121; loss: 0.532076 (replicated: 191207162603.csv)
+- Best val (at 5 epoch): acc: 0.825306; loss: 0.552011
 
 
 ## TODO:
+- [ ] augmentations
 - [ ] weighted loss
-- [ ] weighted dataset
+- [x] weighted dataset -> significantly worse

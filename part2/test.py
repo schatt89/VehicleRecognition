@@ -1,20 +1,8 @@
-import argparse
 from tqdm import tqdm
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import numpy as np
-import torchvision
-from torchvision import datasets, models, transforms
-from torchvision.datasets import ImageFolder
-import matplotlib.pyplot as plt
-import time
-import os
-import copy
-
 from utils import save_predictions
-
-from typing import Tuple, Dict, Union
+from typing import Dict, Union
 
 def test_model(
         model: nn.Module,

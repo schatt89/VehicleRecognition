@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import os
-import torch
 from shutil import copytree, ignore_patterns
 
-from typing import Tuple, Dict, Union
+from typing import Dict, Tuple
 
 def workdir_copy(pwd: str, copy_path: str):
     cp_path = os.path.join(copy_path, 'wdir_copy')
@@ -38,7 +37,7 @@ def plot_images(images, data_dir, cls_true, cls_pred=None):
     Adapted from https://github.com/Hvass-Labs/TensorFlow-Tutorials/
     """
     label_names = sorted(os.listdir(data_dir))
-    fig, axes = plt.subplots(3, 3)
+    fig, axes = plt.subplots(5, 8, figsize=(15, 10))
 
     for i, ax in enumerate(axes.flat):
         # plot img
@@ -56,7 +55,6 @@ def plot_images(images, data_dir, cls_true, cls_pred=None):
         ax.set_xlabel(xlabel)
         ax.set_xticks([])
         ax.set_yticks([])
-
 
     plt.show(block=False)
     plt.pause(5)

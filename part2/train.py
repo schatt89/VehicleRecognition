@@ -1,18 +1,11 @@
-import argparse
 from tqdm import tqdm
 import torch
-import torch.nn as nn
-import torch.optim as optim
 import numpy as np
-import torchvision
-from torchvision import datasets, models, transforms
-from torchvision.datasets import ImageFolder
-import matplotlib.pyplot as plt
 import time
 import os
 import copy
 
-from typing import Tuple, Dict, Union
+from typing import Union
 
 def train_model(
     model, 
@@ -48,21 +41,9 @@ def train_model(
             current_accuracies_pbar = []
             current_loss_pbar = []
 
-            ### TODO: todel
-            labels_history = []
-            img_sums_history = []
-            ###
-
-
-
             # Iterate over data.
             progress_bar = tqdm(dataloaders[phase], desc=f'{phase}: ({epoch})')
             for i, (inputs, labels) in enumerate(progress_bar):
-                ### TODO: todel
-                [labels_history.append(label.item()) for label in labels]
-                [img_sums_history.append(img.sum().item()) for img in inputs]
-                ###
-
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -70,7 +51,6 @@ def train_model(
                 optimizer.zero_grad()
 
                 # forward
-
                 with torch.set_grad_enabled(phase == 'train'):
                     # Get model outputs and calculate loss
                     # Special case for inception because in training it has an auxiliary output. In train
@@ -123,17 +103,6 @@ def train_model(
                 best_optimizer_wts = copy.deepcopy(optimizer.state_dict())
             if phase == 'valid':
                 val_acc_history.append(epoch_acc)
-
-            ### TODO: todel
-            with open(f'./part2/labels_{epoch}_{phase}.txt', 'w') as outf:
-                for label in labels_history:
-                    outf.write(f'{label}\n')
-            with open(f'./part2/sums_{epoch}_{phase}.txt', 'w') as outf:
-                for a_sum in img_sums_history:
-                    outf.write(f'{a_sum}\n')
-            ###
-
-        print()
 
     time_elapsed = time.time() - since
     print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
