@@ -25,9 +25,7 @@ def train_model(
 
     print('If TBoard is used make sure to account for the epoch number')
     for epoch in range(1, num_epochs+1):
-        print('Epoch {}/{}'.format(epoch, num_epochs))
-        print('-' * 10)
-
+        print()
         # Each epoch has a training and validation phase
         for phase in ['train', 'valid']:
             if phase == 'train':
@@ -42,7 +40,7 @@ def train_model(
             current_loss_pbar = []
 
             # Iterate over data.
-            progress_bar = tqdm(dataloaders[phase], desc=f'{phase}: ({epoch})')
+            progress_bar = tqdm(dataloaders[phase], desc=f'{phase}: ({epoch}/{num_epochs})')
             for i, (inputs, labels) in enumerate(progress_bar):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
@@ -71,7 +69,7 @@ def train_model(
                     current_accuracies_pbar.append(torch.sum(preds == labels.data).item() / len(inputs))
                     current_loss_pbar.append(loss.item())
                     if i % 10 == 0:
-                        desc = f'{phase} ({epoch}): '
+                        desc = f'{phase} ({epoch}/{num_epochs}): '
                         desc += f'Loss: {np.mean(current_loss_pbar):.5f}; '
                         desc += f'Acc: {np.mean(current_accuracies_pbar):.5f}'
 
@@ -88,6 +86,8 @@ def train_model(
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
+
+            progress_bar.set_description(f'{phase} ({epoch})')
 
             epoch_loss = running_loss / seen_images
             epoch_acc = running_corrects.double() / seen_images
@@ -106,7 +106,7 @@ def train_model(
 
     time_elapsed = time.time() - since
     print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
-    print(f'Best val (at {best_epoch} epoch): acc: {best_acc:4f}; loss: {best_loss:4f}')
+    print(f'Best val (@ {best_epoch}/{num_epochs} epoch): acc: {best_acc:4f}; loss: {best_loss:4f}')
 
     # load best model weights
     model.load_state_dict(best_model_wts)

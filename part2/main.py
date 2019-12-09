@@ -18,10 +18,14 @@ from utils import workdir_copy
 # print("Torchvision Version: ", torchvision.__version__)
 
 def main():
-    # checks
+    # save the experiment time
+    start_time = strftime("%y%m%d%H%M%S", localtime())
+
+    # checks and logs
     pwd = os.getcwd()
     assert os.getcwd().endswith('VehicleRecognition')
     assert os.path.exists('./part2/experiments/')
+
     print(f'Working dir: {pwd}')
     # fix the random seed
     seed = 13
@@ -31,15 +35,11 @@ def main():
     torch.backends.cudnn.benchmark = False
 
     # paths to dataset
-    # data_dir = '/home/nvme/data/openimg/hymenoptera_data/'
     train_data_dir = '/home/nvme/data/openimg/train/train/'
     test_data_dir = '/home/nvme/data/openimg/test/testset/'
 
     # Number of classes in the dataset
     num_classes = len(os.listdir(train_data_dir))
-
-    # save the experiment time
-    start_time = strftime("%y%m%d%H%M%S", localtime())
 
     # define the paths
     save_pred_path = None
@@ -52,23 +52,26 @@ def main():
     # resnet, alexnet, vgg, squeezenet, densenet, inception
     # 'resnext50_32x4d', 'resnext101_32x8d', 'resnext101_32x48d_wsl', 'resnext101_32x32d_wsl'
     model_name = "squeezenet"
+    # Flag for feature extracting. When False, we finetune the whole model,
+    #   when True we only update the reshaped layer params
+    feature_extract = True
     # hyper parameters
-    device = torch.device("cuda:0")
+    device = torch.device("cuda:2")
     valid_size = 0.25
-    lr = 1e-3
-    batch_size = 64
+    if model_name.startswith('resnext'):
+        lr = 1e-4
+        batch_size = 32
+    else:
+        lr = 1e-4
+        batch_size = 64
     num_workers = 16
     pin_memory = True
     weighted_train_sampler = False
     weighted_loss = False
-    num_epochs = 10
+    num_epochs = 30
 
     # preventing pytorch from allocating some memory on default GPU (0)
     torch.cuda.set_device(device)
-
-    # Flag for feature extracting. When False, we finetune the whole model,
-    #   when True we only update the reshaped layer params
-    feature_extract = True
 
     # Initialize the model for this run
     model_ft, input_size = initialize_model(
@@ -76,20 +79,21 @@ def main():
 
     # Data augmentation and normalization for training
     # Just normalization for validation
+    means = [0.485, 0.456, 0.406]
+    stds = [0.229, 0.224, 0.225]
     data_transforms = {
         'train': transforms.Compose([
             transforms.Resize(input_size),
             transforms.CenterCrop(input_size),
-            # transforms.RandomResizedCrop(input_size),
-            # transforms.RandomHorizontalFlip(),
+            transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize(means, stds)
         ]),
         'valid': transforms.Compose([
             transforms.Resize(input_size),
             transforms.CenterCrop(input_size),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize(means, stds)
         ]),
     }
 
@@ -149,6 +153,10 @@ def main():
     print(f'Timestep: {start_time}')
     print(f'using model: {model_name}')
     print(f'Using optimizer: {optimizer_ft}')
+    print(f'Device {device}')
+    print(f'Batchsize: {batch_size}')
+    print(f'Transforms: {data_transforms}')
+
 
     # Train and evaluate
     model_ft, hist = train_model(
