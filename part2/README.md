@@ -1,5 +1,15 @@
 # Experiments comments
 
+
+### resnext101_32x16d_wsl (wegihted loss, finetune, 1e-6, Resize(in) + CenterCrop() + RandomHorizontalFlip, B 8)
+- 191210134227
+
+----------------------------------------------------------------------------------
+
+### resnext101_32x16d_wsl (finetune, 1e-6, Resize(in) + CenterCrop() + RandomHorizontalFlip, B 8)
+- Best val (@ 3/5 epoch): acc: 0.922628; loss: 0.275009 (191210095047) lb 0.91023
+- Best val (@ 1/5 epoch): acc: 0.921203; loss: 0.297496 (191210112736.csv) (different seed 14)
+
 ### SqueezeNet (finetune, 1e-4, Resize(in) + CenterCrop() + RandomHorizontalFlip)
 - Best val (@ 29/30 epoch): acc: 0.851382; loss: 0.571721 (191209141649)
 
@@ -9,7 +19,7 @@
 ----------------------------------------------------------------------------------
 
 ### resnext101_32x32d_wsl (Resize(in) + CenterCrop() + RandomHorizontalFlip, lr 1e-4, B 32)
-- on cuda:0 (191209125959)
+- Best val (@ 24/30 epoch): acc: 0.897264; loss: 0.322359 (191209125959)
 
 ### SqueezeNet (1e-4, Resize(in) + CenterCrop() + RandomHorizontalFlip)
 - Best val (@ 30/30 epoch): acc: 0.830863; loss: 0.517605 (191209151833)
@@ -25,6 +35,7 @@
 
 ### SqueezeNet (Resize(in) + CenterCrop() + RandomHorizontalFlip)
 - Best val (@ 15/20 epoch): acc: 0.830436; loss: 0.544325 (191209111817.csv)
+
 
 ### SqueezeNet (Resize(in) + RandomResizedCrop(in) + RandomHorizontalFlip)
 - Best val (@ 15/20 epoch): acc: 0.820604; loss: 0.564532 (191209113729.csv)
@@ -96,6 +107,6 @@
 
 ## TODO:
 - [?] augmentations
-- [?] finetuning whole model -> SqueezeNet (w 1e-4 (lower)) is better
+- [x] finetuning whole model -> SqueezeNet (w 1e-4 (lower)) is better; ResNeXt is also better
 - [x] weighted loss -> less worse but bad
 - [x] weighted dataset -> significantly worse
