@@ -4,5 +4,4 @@
 runs/
 tutorials/
 Ex3.ipynb
-*.csv
 *.h5
