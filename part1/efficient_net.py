@@ -20,6 +20,7 @@ from tensorflow.keras import optimizers
 from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPool2D, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import TensorBoard, ReduceLROnPlateau, ModelCheckpoint
+import efficientnet.tfkeras as efn
 
 from tensorflow.keras.optimizers import SGD, Adam
 
@@ -27,10 +28,7 @@ def main(args):
     class_names = sorted(os.listdir(r"/home/nvme/data/train/train"))
     N_classes = len(class_names)
     
-    base_model = tf.keras.applications.inception_v3.InceptionV3(
-       input_shape = (224,224,3),
-       include_top = False
-    )
+    base_model = efn.EfficientNetB6(weights='imagenet', include_top = False, input_shape = (224,224,3))
     
     # add a global spatial average pooling layer
     x = base_model.output
@@ -58,7 +56,7 @@ def main(args):
     original_dir = "/home/nvme/data/train/train"
     validation_split = 0.2
 
-    batch_size = 32
+    batch_size = 16
 
     # all data in train_dir and val_dir which are alias to original_data. (both dir is temporary directory)
     # don't clear base_dir, because this directory holds on temp directory.
@@ -122,9 +120,9 @@ def main(args):
        class_weight =  class_weights
     )
     
-    for layer in model.layers[:249]:
+    for layer in model.layers[:658]:
         layer.trainable = False
-    for layer in model.layers[249:]:
+    for layer in model.layers[658:]:
         layer.trainable = True
     
     model.compile(optimizer=SGD(lr=0.0001, momentum=0.9),
@@ -137,7 +135,7 @@ def main(args):
         validation_steps = val_gen.samples // batch_size,
         epochs = epochs)
     
-    model.save('inception_v3.h5')
+    model.save('efficientnet.h5')
     
     datagen_test = ImageDataGenerator(rescale = 1./255.)
 

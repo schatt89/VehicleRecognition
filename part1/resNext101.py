@@ -111,6 +111,11 @@ def main(args):
                      14: 11,
                      15: 4,
                      16: 7}
+    
+    for layer in model.layers[:2491]:
+        layer.trainable = False
+    for layer in model.layers[2491:]:
+        layer.trainable = True
 
     model.fit_generator(train_gen,
         steps_per_epoch = train_gen.samples // batch_size,
