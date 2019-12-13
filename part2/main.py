@@ -12,12 +12,18 @@ from loaders import get_train_valid_loader, get_test_loader
 from models import initialize_model
 from utils import workdir_copy
 
+from transforms import ImgAugTransform
+
 # PyTorch Version:  1.3.1
 # Torchvision Version:  0.4.2
 # print("PyTorch Version: ", torch.__version__)
 # print("Torchvision Version: ", torchvision.__version__)
 
+
 def main():
+    '''
+    Run as: (python ./part2/main.py 2>&1) | tee /home/hdd/logs/openimg/$(date +'%y%m%d%H%M%S').txt
+    '''
     # save the experiment time
     start_time = strftime("%y%m%d%H%M%S", localtime())
 
@@ -48,19 +54,21 @@ def main():
 
     # backup the working directiory
     workdir_copy(pwd, os.path.split(save_best_model_path)[0])
-    
+
     # resnet, alexnet, vgg, squeezenet, densenet, inception
     # 'resnext50_32x4d', 'resnext101_32x8d', 'resnext101_32x48d_wsl', 'resnext101_32x32d_wsl'
-    model_name = "squeezenet"
+    # 'resnext101_32x16d_wsl
+    model_name = "resnext101_32x16d_wsl"
     # Flag for feature extracting. When False, we finetune the whole model,
     #   when True we only update the reshaped layer params
-    feature_extract = True
+    feature_extract = False
     # hyper parameters
-    device = torch.device("cuda:2")
+    device = torch.device("cuda:0")
     valid_size = 0.25
     if model_name.startswith('resnext'):
-        lr = 1e-4
-        batch_size = 32
+        lr = 1e-7
+        # batch_size = 32
+        batch_size = 8
     else:
         lr = 1e-4
         batch_size = 64
@@ -68,7 +76,7 @@ def main():
     pin_memory = True
     weighted_train_sampler = False
     weighted_loss = False
-    num_epochs = 30
+    num_epochs = 20
 
     # preventing pytorch from allocating some memory on default GPU (0)
     torch.cuda.set_device(device)
@@ -81,13 +89,34 @@ def main():
     # Just normalization for validation
     means = [0.485, 0.456, 0.406]
     stds = [0.229, 0.224, 0.225]
+    # data_transforms = {
+    #     'train': transforms.Compose([
+    #         transforms.Resize(input_size),
+    #         transforms.CenterCrop(input_size),
+    #         transforms.RandomHorizontalFlip(),
+    #         transforms.ToTensor(),
+    #         transforms.Normalize(means, stds)
+    #     ]),
+    #     'valid': transforms.Compose([
+    #         transforms.Resize(input_size),
+    #         transforms.CenterCrop(input_size),
+    #         transforms.ToTensor(),
+    #         transforms.Normalize(means, stds)
+    #     ]),
+    # }
+
     data_transforms = {
         'train': transforms.Compose([
             transforms.Resize(input_size),
-            transforms.CenterCrop(input_size),
+            # transforms.CenterCrop(input_size),
+            transforms.RandomCrop(input_size),
             transforms.RandomHorizontalFlip(),
+            # albumentations
+            ImgAugTransform(input_size, 0.25),
+            # here they end
+            transforms.ToPILImage(),
             transforms.ToTensor(),
-            transforms.Normalize(means, stds)
+            transforms.Normalize(means, stds),
         ]),
         'valid': transforms.Compose([
             transforms.Resize(input_size),
@@ -98,8 +127,8 @@ def main():
     }
 
     train_loader, valid_loader = get_train_valid_loader(
-        train_data_dir, batch_size, data_transforms, seed, weighted_train_sampler, 
-        valid_size=valid_size, shuffle=True, show_sample=True, num_workers=num_workers, 
+        train_data_dir, batch_size, data_transforms, seed, weighted_train_sampler,
+        valid_size=valid_size, shuffle=True, show_sample=True, num_workers=num_workers,
         pin_memory=pin_memory
     )
 
@@ -148,7 +177,7 @@ def main():
         weights = torch.FloatTensor([1.0 for c in range(num_classes)]).to(device)
 
     criterion = nn.CrossEntropyLoss(weights)
-    
+
     # print some things here so it will be seen in terminal for longer time
     print(f'Timestep: {start_time}')
     print(f'using model: {model_name}')
@@ -156,7 +185,6 @@ def main():
     print(f'Device {device}')
     print(f'Batchsize: {batch_size}')
     print(f'Transforms: {data_transforms}')
-
 
     # Train and evaluate
     model_ft, hist = train_model(
@@ -167,8 +195,7 @@ def main():
     # do test inference
     if save_pred_path is not None:
         test_model(model_ft, dataloaders_dict, device, save_pred_path,
-                is_inception=(model_name == "inception"))
-
+                   is_inception=(model_name == "inception"))
 
 
 if __name__ == "__main__":

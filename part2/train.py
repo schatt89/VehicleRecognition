@@ -87,8 +87,6 @@ def train_model(
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
 
-            progress_bar.set_description(f'{phase} ({epoch})')
-
             epoch_loss = running_loss / seen_images
             epoch_acc = running_corrects.double() / seen_images
 

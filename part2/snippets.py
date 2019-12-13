@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision.datasets as datasets
 
+
 from typing import List, Tuple
 
 # def calculate_class_weights(data_dir: str) -> Dict[str, float]:
@@ -268,6 +269,54 @@ def visualize_model(model_name, model_path, show_only_fails, device, weighted_tr
         plt.show()
         print('Use Ctrl-C in the Terminal to stop the infinite loop')
 
+def show_augmentations():
+    from imgaug import augmenters as iaa
+    from imgaug import parameters as iap
+    import imgaug as ia
+    from transforms import ImgAugTransform
+    
+
+    idx = 12342 # 12341
+    n = 5
+    input_size = 224
+    train_data_dir = '/home/nvme/data/openimg/train/train/'
+    means = [0.485, 0.456, 0.406]
+    stds = [0.229, 0.224, 0.225]
+
+    data_transforms = {
+        'train': transforms.Compose([
+            transforms.Resize(input_size),
+            # transforms.CenterCrop(input_size),
+            transforms.RandomCrop(input_size),
+            transforms.RandomHorizontalFlip(),
+            ImgAugTransform(input_size),
+            transforms.ToPILImage()
+            # transforms.ToTensor(),
+            # transforms.Normalize(means, stds)
+        ]),
+        'valid': transforms.Compose([
+            transforms.Resize(input_size),
+            transforms.CenterCrop(input_size),
+            # transforms.ToTensor(),
+            # transforms.Normalize(means, stds)
+        ]),
+    }
+    train_dataset = datasets.ImageFolder(train_data_dir)
+
+    img = train_dataset[idx][0]
+
+    fig = plt.figure(figsize=(20, 10))
+    ax = plt.subplot(3, 1, 1)
+    plt.imshow(np.asarray(img))
+
+    for i in range(n+1, 3*n+1):
+        ax = plt.subplot(3, n, i)
+        plt.imshow(np.asarray(data_transforms['train'](img)))
+
+    plt.tight_layout()
+    plt.show()
+
+
 
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser(description='Training experiment.')
@@ -281,11 +330,12 @@ if __name__ == "__main__":
     # print(make_weighted_train_valid_samplers())
     # test_samplers()
 
-    visualize_model(
-        model_name="resnext101_32x32d_wsl",
-        model_path='/home/hdd/logs/openimg/191207181758/best_model.pt',
-        show_only_fails=True,
-        device=torch.device('cuda:1'),
-        weighted_train_sampler=True,
-        num_images=10*5
-    )
+    # visualize_model(
+    #     model_name="resnext101_32x32d_wsl",
+    #     model_path='/home/hdd/logs/openimg/191207181758/best_model.pt',
+    #     show_only_fails=True,
+    #     device=torch.device('cuda:1'),
+    #     weighted_train_sampler=True,
+    #     num_images=10*5
+    # )
+    show_augmentations()

@@ -2,9 +2,18 @@
 
 
 ### resnext101_32x16d_wsl (wegihted loss, finetune, 1e-6, Resize(in) + CenterCrop() + RandomHorizontalFlip, B 8)
-- 191210134227
+- Best val (@ 9/10 epoch): acc: 0.906811; loss: 0.558235 (191210134227)
 
 ----------------------------------------------------------------------------------
+
+### resnext101_32x16d_wsl (finetune, 1e-7, Resize(in) + CenterCrop() + RandomHorizontalFlip + Many other augs+others (p=0.25), B 8)
+- cuda:0 (191213142715)
+
+### resnext101_32x16d_wsl (finetune, 1e-6, Resize(in) + CenterCrop() + RandomHorizontalFlip + Many other augs (p=0.10), B 8)
+- Best val (@ 3/20 epoch): acc: 0.920918; loss: 0.272968 (191210173917)
+
+### resnext101_32x16d_wsl (wegihted sampler, finetune, 1e-6, Resize(in) + CenterCrop() + RandomHorizontalFlip + Many other augs (p=0.10), B 8)
+- Best val (@ 15/20 epoch): acc: 0.918210; loss: 0.341146 (191210195835)
 
 ### resnext101_32x16d_wsl (finetune, 1e-6, Resize(in) + CenterCrop() + RandomHorizontalFlip, B 8)
 - Best val (@ 3/5 epoch): acc: 0.922628; loss: 0.275009 (191210095047) lb 0.91023
