@@ -23,7 +23,6 @@ def train_model(
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
-    print('If TBoard is used make sure to account for the epoch number')
     for epoch in range(1, num_epochs+1):
         print()
         # Each epoch has a training and validation phase

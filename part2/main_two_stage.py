@@ -22,7 +22,7 @@ from transforms import ImgAugTransform
 
 def main():
     '''
-    Run as: (python ./part2/main.py 2>&1) | tee /home/hdd/logs/openimg/$(date +'%y%m%d%H%M%S').txt
+    Run as: (python ./part2/main_two_stage.py 2>&1) | tee /home/hdd/logs/openimg/$(date +'%y%m%d%H%M%S').txt
     '''
     # save the experiment time
     start_time = strftime("%y%m%d%H%M%S", localtime())
@@ -59,34 +59,38 @@ def main():
     # 'resnext50_32x4d', 'resnext101_32x8d', 'resnext101_32x48d_wsl', 'resnext101_32x32d_wsl'
     # 'resnext101_32x16d_wsl
     model_name = "resnext101_32x16d_wsl"
-    # Flag for feature extracting. When False, we finetune the whole model,
-    #   when True we only update the reshaped layer params
-    feature_extract = False
-    # hyper parameters
-    device = torch.device("cuda:0")
-    valid_size = 0.10
+
+    device = torch.device("cuda:2")
+    valid_size = 0.25
     if model_name.startswith('resnext'):
-        lr = 5e-7
-        # batch_size = 32
-        batch_size = 8
+        lr_stage_1 = 1e-4
+        lr_stage_2 = 1e-8
+        batch_size_stage_1 = 32
+        batch_size_stage_2 = 8
     elif model_name.startswith('densenet'):
-        lr = 1e-5
-        batch_size = 32
+        lr_stage_1 = 1e-5
+        lr_stage_2 = 1e-8
+        batch_size_stage_1 = 32
+        batch_size_stage_2 = 8
     else:
-        lr = 1e-4
-        batch_size = 64
+        lr_stage_1 = 1e-4
+        lr_stage_2 = 1e-8
+        batch_size_stage_1 = 64
+        batch_size_stage_2 = 16
     num_workers = 16
     pin_memory = True
     weighted_train_sampler = False
     weighted_loss = False
-    num_epochs = 20
+    # num_epochs = 40
+    num_epochs_stage_1 = 10
+    num_epochs_stage_2 = 15
 
     # preventing pytorch from allocating some memory on default GPU (0)
     torch.cuda.set_device(device)
 
     # Initialize the model for this run
     model_ft, input_size = initialize_model(
-        model_name, num_classes, feature_extract, use_pretrained=True)
+        model_name, num_classes, feature_extract=True, use_pretrained=True)
 
     # Data augmentation and normalization for training
     # Just normalization for validation
@@ -113,24 +117,24 @@ def main():
         ]),
     }
 
+    # Send the model to GPU
+    model_ft = model_ft.to(device)
+
+    ### STAGE-1
     train_loader, valid_loader = get_train_valid_loader(
-        train_data_dir, batch_size, data_transforms, seed, weighted_train_sampler,
+        train_data_dir, batch_size_stage_1, data_transforms, seed, weighted_train_sampler,
         valid_size=valid_size, shuffle=True, show_sample=True, num_workers=num_workers,
         pin_memory=pin_memory
     )
 
     test_loader = get_test_loader(
-        test_data_dir, batch_size, data_transforms, num_workers=num_workers, pin_memory=pin_memory)
+        test_data_dir, batch_size_stage_1, data_transforms, num_workers=num_workers, pin_memory=pin_memory)
 
     dataloaders_dict = {
         'train': train_loader,
         'valid': valid_loader,
         'test': test_loader
     }
-
-    # Send the model to GPU
-    model_ft = model_ft.to(device)
-
     # Gather the parameters to be optimized/updated in this run. If we are
     #  finetuning we will be updating all parameters. However, if we are
     #  doing feature extract method, we will only update the parameters
@@ -138,19 +142,13 @@ def main():
     #  is True.
     params_to_update = model_ft.parameters()
     print("Params to learn:")
-    if feature_extract:
-        params_to_update = []
-        for name, param in model_ft.named_parameters():
-            if param.requires_grad == True:
-                params_to_update.append(param)
-                print("\t", name)
-    else:
-        for name, param in model_ft.named_parameters():
-            if param.requires_grad == True:
-                print("\t", name)
-
+    params_to_update = []
+    for name, param in model_ft.named_parameters():
+        if param.requires_grad == True:
+            params_to_update.append(param)
+            print("\t", name)
     # Observe that all parameters are being optimized
-    optimizer_ft = optim.Adam(params_to_update, lr=lr)
+    optimizer_ft = optim.Adam(params_to_update, lr=lr_stage_1)
 
     # Setup the loss fxn
     if weighted_loss:
@@ -170,13 +168,67 @@ def main():
     print(f'using model: {model_name}')
     print(f'Using optimizer: {optimizer_ft}')
     print(f'Device {device}')
-    print(f'Batchsize: {batch_size}')
+    print(f'Batchsize: {batch_size_stage_1}, {batch_size_stage_2}')
     print(f'Transforms: {data_transforms}')
 
     # Train and evaluate
+    print('STAGE-1')
     model_ft, hist = train_model(
-        model_ft, dataloaders_dict, criterion, optimizer_ft, device, save_best_model_path,
-        num_epochs=num_epochs, is_inception=(model_name == "inception")
+        model_ft, dataloaders_dict, criterion, optimizer_ft, device, 
+        save_best_model_path.replace('.pt', '_stage_1.pt'),
+        num_epochs=num_epochs_stage_1, is_inception=(model_name == "inception")
+    )
+
+    # # do test inference
+    # if save_pred_path is not None:
+    #     test_model(model_ft, dataloaders_dict, device, save_pred_path,
+    #                is_inception=(model_name == "inception"))
+
+
+    ### STAGE-2
+    # Gather the parameters to be optimized/updated in this run. If we are
+    #  finetuning we will be updating all parameters. However, if we are
+    #  doing feature extract method, we will only update the parameters
+    #  that we have just initialized, i.e. the parameters with requires_grad
+    #  is True.
+    for param in model_ft.parameters():
+        param.requires_grad = True
+    params_to_update = model_ft.parameters()
+    print("Params to learn:")
+    for name, param in model_ft.named_parameters():
+        if param.requires_grad == True:
+            print("\t", name)
+
+    # Observe that all parameters are being optimized
+    optimizer_ft = optim.Adam(params_to_update, lr=lr_stage_2)
+
+    train_loader, valid_loader = get_train_valid_loader(
+        train_data_dir, batch_size_stage_2, data_transforms, seed, weighted_train_sampler,
+        valid_size=valid_size, shuffle=True, show_sample=True, num_workers=num_workers,
+        pin_memory=pin_memory
+    )
+
+    test_loader = get_test_loader(
+        test_data_dir, batch_size_stage_2, data_transforms, num_workers=num_workers, pin_memory=pin_memory)
+
+    dataloaders_dict = {
+        'train': train_loader,
+        'valid': valid_loader,
+        'test': test_loader
+    }
+
+    # Train and evaluate
+    print('STAGE-2')
+    print(f'Timestep: {start_time}')
+    print(f'using model: {model_name}')
+    print(f'Using optimizer: {optimizer_ft}')
+    print(f'Device {device}')
+    print(f'Batchsize: {batch_size_stage_1}, {batch_size_stage_2}')
+    print(f'Transforms: {data_transforms}')
+    model_ft, hist = train_model(
+        model_ft, dataloaders_dict, criterion, optimizer_ft, device, 
+        save_best_model_path.replace('.pt', '_stage_2.pt'),
+        num_epochs=num_epochs_stage_2, is_inception=(model_name == "inception")
     )
 
     # do test inference
