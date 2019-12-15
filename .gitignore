@@ -1,5 +1,6 @@
 .ipynb_checkpoints
 .vscode/
+jupyter_notebooks/
 */__pycache__/*
 runs/
 part1/*.ipynb
