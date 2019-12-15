@@ -60,11 +60,11 @@ def main():
     # 'resnext101_32x16d_wsl
     model_name = "resnext101_32x16d_wsl"
 
-    device = torch.device("cuda:2")
+    device = torch.device("cuda:0")
     valid_size = 0.25
     if model_name.startswith('resnext'):
         lr_stage_1 = 1e-4
-        lr_stage_2 = 1e-8
+        lr_stage_2 = 1e-7
         batch_size_stage_1 = 32
         batch_size_stage_2 = 8
     elif model_name.startswith('densenet'):
@@ -82,7 +82,7 @@ def main():
     weighted_train_sampler = False
     weighted_loss = False
     # num_epochs = 40
-    num_epochs_stage_1 = 10
+    num_epochs_stage_1 = 20
     num_epochs_stage_2 = 15
 
     # preventing pytorch from allocating some memory on default GPU (0)
@@ -204,7 +204,7 @@ def main():
 
     train_loader, valid_loader = get_train_valid_loader(
         train_data_dir, batch_size_stage_2, data_transforms, seed, weighted_train_sampler,
-        valid_size=valid_size, shuffle=True, show_sample=True, num_workers=num_workers,
+        valid_size=valid_size, shuffle=True, show_sample=False, num_workers=num_workers,
         pin_memory=pin_memory
     )
 

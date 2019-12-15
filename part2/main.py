@@ -16,9 +16,6 @@ from transforms import ImgAugTransform
 
 # PyTorch Version:  1.3.1
 # Torchvision Version:  0.4.2
-# print("PyTorch Version: ", torch.__version__)
-# print("Torchvision Version: ", torchvision.__version__)
-
 
 def main():
     '''
@@ -95,12 +92,9 @@ def main():
     data_transforms = {
         'train': transforms.Compose([
             transforms.Resize(input_size),
-            # transforms.CenterCrop(input_size),
             transforms.RandomCrop(input_size),
             transforms.RandomHorizontalFlip(),
-            # albumentations
             ImgAugTransform(input_size, 0.25),
-            # here they end
             transforms.ToPILImage(),
             transforms.ToTensor(),
             transforms.Normalize(means, stds),
