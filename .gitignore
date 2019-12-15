@@ -2,7 +2,7 @@
 .vscode/
 */__pycache__/*
 runs/
+part1/*.ipynb
 tutorials/
 Ex3.ipynb
-*.csv
 *.h5
