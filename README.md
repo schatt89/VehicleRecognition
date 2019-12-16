@@ -5,7 +5,7 @@ This repo contains the 5th place solution for the [TAU Vehicle Type Recognition 
 ## The team 
 
 - Anna Iashina ([LinkedIn](https://www.linkedin.com/in/anna-iashina/))
-- Einary Vaaras ([e-mail]<>)
+- Einary Vaaras ([e-mail]<einari.vaaras@tuni.fi>)
 - Vladimir Iashin ([LinkedIn](https://www.linkedin.com/in/vladimir-iashin/))
 - Maral Zadehdarrehshoorian ([LinkedIn](https://www.linkedin.com/in/mzdarrehshoorian/))
 
@@ -20,8 +20,8 @@ Another submission which was meant to maximize the public lb score was a majorit
 Validation: stratified split 75/25 (we didn't do K-Fold CV to save time but you can add one loop to the code easily).
 
 What didn't work:
-1. weighted sampler and loss
-2. two-stage training: when the model weights are frozen and only the last layer is trained and, after, the whole model is finetuned with a lower lr
+1. Weighted sampler and loss
+2. Two-stage training: when the model weights are frozen and only the last layer is trained and, after, the whole model is finetuned with a lower lr
 3. AdamW optimizer (the same results)
 
 # Contents description
