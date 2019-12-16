@@ -5,7 +5,7 @@ This repo contains the 5th place solution for the [TAU Vehicle Type Recognition 
 ## The team 
 
 - Anna Iashina ([LinkedIn](https://www.linkedin.com/in/anna-iashina/))
-- Einary Vaaras ([e-mail]<einari.vaaras@tuni.fi>)
+- Einary Vaaras (<einari.vaaras@tuni.fi>)
 - Vladimir Iashin ([LinkedIn](https://www.linkedin.com/in/vladimir-iashin/))
 - Maral Zadehdarrehshoorian ([LinkedIn](https://www.linkedin.com/in/mzdarrehshoorian/))
 
