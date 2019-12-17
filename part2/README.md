@@ -16,7 +16,7 @@ conda env create -f environment.yml
 
 ## How to run
 
-First, you need to replace the paths in `main.py` (sorry). For one-staged training (best, if want to run two-staged replace `main.py` with `main_two_stage.py`)
+First, you need to replace the paths in `main.py` (sorry). For training our best model try (if you want to try a two-staged model replace `main.py` with `main_two_stage.py`)
 ```
 # make sure to activate conda environment (for example `conda activate openimg`)
 python ./part2/main.py
